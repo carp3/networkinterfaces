@@ -1,0 +1,17 @@
+{
+  "name": "carp3/network-interfaces",
+  "description": "A simple library to modify debian's /etc/netowrk/interfaces",
+  "minimum-stability": "alpha",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "carp3\\NetworkInterfaces\\": "src"
+    }
+  },
+  "authors": [
+    {
+      "name": "Pedram Azimaie",
+      "email": "carp3co@gmail.com"
+    }
+  ]
+}
