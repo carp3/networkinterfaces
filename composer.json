@@ -1,6 +1,9 @@
 {
   "name": "carp3/network-interfaces",
   "description": "A simple library to modify debian's /etc/netowrk/interfaces",
+  "require": {
+    "php": "^7.0"
+  },
   "minimum-stability": "alpha",
   "license": "MIT",
   "autoload": {
