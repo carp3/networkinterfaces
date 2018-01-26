@@ -20,7 +20,7 @@ use Exception;
 class NetworkInterfaces
 {
     /**
-     * @var array
+     * @var Adaptor[]
      */
     public $Adaptors = [];
     /**
@@ -42,8 +42,8 @@ class NetworkInterfaces
 
     /**
      * NetworkInterfaces constructor.
-     * @param string $InterfacePath
-     * @param bool $new
+     * @param string $InterfacePath Path to interface file, usually /etc/network/interfaces
+     * @param bool $new skip reading interface file, useful for creating new file
      * @throws Exception
      */
     public function __construct(string $InterfacePath = '/etc/network/interfaces', $new = False)
@@ -62,6 +62,7 @@ class NetworkInterfaces
     }
 
     /**
+     * read interface file and fill Adaptor property
      * @return array
      * @throws Exception
      */
@@ -118,6 +119,7 @@ class NetworkInterfaces
     private function _addAdaptor($adaptor)
     {
         if (!array_key_exists($adaptor, $this->Adaptors)) $this->Adaptors[$adaptor] = new Adaptor();
+        $this->Adaptors[$adaptor]->auto = false;
     }
 
     /**
@@ -175,8 +177,9 @@ class NetworkInterfaces
     }
 
     /**
-     * @param $name
-     * @param bool $sudo
+     * brings up an interface
+     * @param string $name Interface name
+     * @param bool $sudo use sudo command before ifup
      * @throws Exception
      */
     public function up($name, $sudo = false)
@@ -191,8 +194,9 @@ class NetworkInterfaces
     }
 
     /**
-     * @param $name
-     * @param bool $sudo
+     * brings down an interface
+     * @param string $name Interface name
+     * @param bool $sudo use sudo command before ifdown
      * @throws Exception
      */
     public function down($name, $sudo = false)
@@ -206,11 +210,12 @@ class NetworkInterfaces
     }
 
     /**
-     * @param $name
-     * @param bool $sudo
+     * restart an interface
+     * @param string $name Interface name
+     * @param bool $sudo use sudo command before ifup and ifdown
      * @throws Exception
      */
-    public function reset($name, $sudo = false)
+    public function restart($name, $sudo = false)
     {
         if (!$this->_interfaceParsed)
             throw new Exception("Interface file is not parsed");
@@ -221,7 +226,8 @@ class NetworkInterfaces
     }
 
     /**
-     * @param bool $return
+     * generate inteface file and write it (or return it)
+     * @param bool $return if true, generated file will be returned.
      * @return bool|int|string
      * @throws Exception
      */
@@ -257,6 +263,7 @@ class NetworkInterfaces
 
 
     /**
+     * add a new adaptor to Adaptor property
      * @param Adaptor $Adaptor
      * @throws Exception
      */

@@ -13,14 +13,45 @@ namespace NetworkInterfaces;
 
 use Exception;
 
+/**
+ * Class Adaptor, represent an Adaptor
+ * @package NetworkInterfaces
+ */
 class Adaptor
 {
-    public $name;
-    public $family;
-    public $method;
-    public $auto = false;
+    /**
+     * Interface name, usually ethXX for ethernet
+     * @var string
+     */
+    public $name = "eth0";
+    /**
+     * Interface family, inet for ipv4 and inet6 for ipv6
+     * @var string
+     */
+    public $family = "inet";
+    /**
+     * Interface method, dhcp , static or manual
+     * @var string
+     */
+    public $method = "dhcp";
+    /**
+     * bring up interface automatically on startup
+     * @var bool
+     */
+    public $auto = true;
+    /**
+     * allow option, usually hotplug
+     * @var array
+     */
     public $allows = [];
+    /**
+     * unrecognized options
+     * @var array
+     */
     public $Unknown = [];
+    /**
+     * @var array
+     */
     protected $data = [];
 
     public function __get($name)
