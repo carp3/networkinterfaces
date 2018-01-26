@@ -271,8 +271,8 @@ class NetworkInterfaces
     {
         if (!$this->_interfaceParsed)
             throw new Exception("Interface file is not parsed");
-        if (!array_key_exists($Adaptor->name, $this->Adaptors))
-            throw new Exception("{$Adaptor->name} does not exist is adaptor list");
+        if (array_key_exists($Adaptor->name, $this->Adaptors))
+            throw new Exception("{$Adaptor->name} already exist is adaptor list");
         $this->Adaptors[$Adaptor->name] = $Adaptor;
     }
 
