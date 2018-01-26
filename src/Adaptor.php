@@ -27,6 +27,7 @@ class Adaptor
     {
         if (array_key_exists($name, $this->data))
             return $this->data[$name];
+
         throw new Exception("$name is not defined");
     }
 

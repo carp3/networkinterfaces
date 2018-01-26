@@ -13,14 +13,39 @@ namespace NetworkInterfaces;
 
 use Exception;
 
+/**
+ * Class NetworkInterfaces
+ * @package NetworkInterfaces
+ */
 class NetworkInterfaces
 {
+    /**
+     * @var array
+     */
     public $Adaptors = [];
+    /**
+     * @var bool|string
+     */
     private $_interfaceFile = false;
+    /**
+     * @var bool|string
+     */
     private $_interfaceContent = '';
+    /**
+     * @var bool
+     */
     private $_interfaceLoaded = false;
+    /**
+     * @var bool
+     */
     private $_interfaceParsed = false;
 
+    /**
+     * NetworkInterfaces constructor.
+     * @param string $InterfacePath
+     * @param bool $new
+     * @throws Exception
+     */
     public function __construct(string $InterfacePath = '/etc/network/interfaces', $new = False)
     {
         $this->_interfaceFile = $InterfacePath;
@@ -36,6 +61,10 @@ class NetworkInterfaces
         $this->_interfaceLoaded = true;
     }
 
+    /**
+     * @return array
+     * @throws Exception
+     */
     public function list()
     {
         if (!$this->_interfaceLoaded)
@@ -59,6 +88,10 @@ class NetworkInterfaces
         return $this->Adaptors;
     }
 
+    /**
+     * @param $item
+     * @return mixed
+     */
     private function _parseIface($item)
     {
         $chunks = $this->_split($item);
@@ -78,14 +111,18 @@ class NetworkInterfaces
         return $returnAdaptor ? $chunks[1] : $chunks;
     }
 
+
     /**
-     * @param $chunks
+     * @param $adaptor
      */
     private function _addAdaptor($adaptor)
     {
         if (!array_key_exists($adaptor, $this->Adaptors)) $this->Adaptors[$adaptor] = new Adaptor();
     }
 
+    /**
+     * @param $item
+     */
     private function _parseAuto($item)
     {
         $chunks = $this->_split($item);
@@ -96,6 +133,9 @@ class NetworkInterfaces
 
     }
 
+    /**
+     * @param $item
+     */
     private function _parseAllow($item)
     {
         $chunks = $this->_split($item);
@@ -104,6 +144,10 @@ class NetworkInterfaces
         if (!in_array($allow, $this->Adaptors[$chunks[1]]->allows)) $this->Adaptors[$chunks[1]]->allows[] = $allow;
     }
 
+    /**
+     * @param $item
+     * @param $lastAdaptor
+     */
     private function _parseDetail($item, $lastAdaptor)
     {
         $chunks = $this->_split($item, $lastAdaptor);
@@ -130,25 +174,63 @@ class NetworkInterfaces
         }
     }
 
-    public function up($name)
+    /**
+     * @param $name
+     * @param bool $sudo
+     * @throws Exception
+     */
+    public function up($name, $sudo = false)
     {
+        if (!$this->_interfaceParsed)
+            throw new Exception("Interface file is not parsed");
+        if (!array_key_exists($name, $this->Adaptors))
+            throw new Exception("$name does not exist is adaptor list");
+        $cmd = ($sudo ? 'sudo ' : '') . "ifup $name";
+        shell_exec($cmd);
 
     }
 
-    public function down($name)
+    /**
+     * @param $name
+     * @param bool $sudo
+     * @throws Exception
+     */
+    public function down($name, $sudo = false)
     {
-
+        if (!$this->_interfaceParsed)
+            throw new Exception("Interface file is not parsed");
+        if (!array_key_exists($name, $this->Adaptors))
+            throw new Exception("$name does not exist is adaptor list");
+        $cmd = ($sudo ? 'sudo ' : '') . "ifdown $name";
+        shell_exec($cmd);
     }
 
-    public function test()
+    /**
+     * @param $name
+     * @param bool $sudo
+     * @throws Exception
+     */
+    public function reset($name, $sudo = false)
     {
-
+        if (!$this->_interfaceParsed)
+            throw new Exception("Interface file is not parsed");
+        if (!array_key_exists($name, $this->Adaptors))
+            throw new Exception("$name does not exist is adaptor list");
+        $cmd = ($sudo ? 'sudo ' : '') . "ifdown $name && " . ($sudo ? ' sudo ' : '') . "ifup $name";
+        shell_exec($cmd);
     }
 
-    public function write($stream = False)
+    /**
+     * @param bool $return
+     * @return bool|int|string
+     * @throws Exception
+     */
+    public function write($return = False)
     {
-        if (!@is_writable($this->_interfaceFile) && !$stream)
-            throw new Exception("Interface file is not writeable");
+        if (!$this->_interfaceParsed)
+            throw new Exception("Interface file is not parsed");
+        if (!@is_writable($this->_interfaceFile) && !$return)
+            throw new Exception("Interface file is not writable");
         $knownAddresses = ['address', 'netmask', 'gateway', 'broadcast', 'network'];
 
         $buffer = [];
@@ -166,10 +248,25 @@ class NetworkInterfaces
                 $buffer[] = " $item";
             $buffer[] = '';
         }
-        if ($stream)
-            return implode("\n", $buffer);
-        return file_put_contents($this->_interfaceFile, $buffer);
+        $imploded = implode("\n", $buffer);
+        if ($return)
+            return $imploded;
+        return file_put_contents($this->_interfaceFile, $imploded);
 
+    }
+
+
+    /**
+     * @param Adaptor $Adaptor
+     * @throws Exception
+     */
+    public function add($Adaptor)
+    {
+        if (!$this->_interfaceParsed)
+            throw new Exception("Interface file is not parsed");
+        if (!array_key_exists($Adaptor->name, $this->Adaptors))
+            throw new Exception("{$Adaptor->name} does not exist is adaptor list");
+        $this->Adaptors[$Adaptor->name] = $Adaptor;
     }
 
 }
