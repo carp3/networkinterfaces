@@ -66,7 +66,7 @@ class NetworkInterfaces
      * @return array
      * @throws Exception
      */
-    public function list()
+    public function parse()
     {
         if (!$this->_interfaceLoaded)
             throw new Exception("Interface file is not loaded");
