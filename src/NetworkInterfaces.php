@@ -157,11 +157,11 @@ class NetworkInterfaces
         $adaptor = &$this->Adaptors[$lastAdaptor];
         switch ($chunks[0]) {
             case 'address':
-                if(strpos($name, '/') == false)
+                if(strpos($chunks[1], '/') == false)
                     $adaptor->address = $chunks[1];
                 else
                 {
-                    $chunks[1] =  $this->_parseCidr($chunks[1])('/', $chunks[1]);
+                    $chunks[1] =  $this->_parseCidr($chunks[1]);
                     $adaptor->address = $chunks[1]["address"];
                     $adaptor->netmask = $chunks[1]["netmask"];
                     $adaptor->broadcast = $chunks[1]["broadcast"];
