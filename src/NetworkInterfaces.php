@@ -73,6 +73,8 @@ class NetworkInterfaces
         $interfaceContent = explode("\n", $this->_interfaceContent);
         $lastAdaptor = '';
         foreach ($interfaceContent as $item) {
+            $item = trim($item);
+
             if (strpos(ltrim($item), '#') === 0) continue;
             if (trim($item) == '') continue;
             if (strpos($item, 'iface') === 0)
@@ -81,8 +83,7 @@ class NetworkInterfaces
                 $this->_parseAuto($item);
             elseif (strpos($item, 'allow-') === 0)
                 $this->_parseAllow($item);
-            elseif (strpos($item, ' ') === 0)
-                if ($lastAdaptor != '')
+            elseif ($lastAdaptor != '')
                     $this->_parseDetail($item, $lastAdaptor);
         }
         $this->_interfaceParsed = true;
