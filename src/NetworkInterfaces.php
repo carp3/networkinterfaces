@@ -73,6 +73,8 @@ class NetworkInterfaces
         $interfaceContent = explode("\n", $this->_interfaceContent);
         $lastAdaptor = '';
         foreach ($interfaceContent as $item) {
+            $item = trim($item);
+
             if (strpos(ltrim($item), '#') === 0) continue;
             if (trim($item) == '') continue;
             if (strpos($item, 'iface') === 0)
@@ -81,9 +83,8 @@ class NetworkInterfaces
                 $this->_parseAuto($item);
             elseif (strpos($item, 'allow-') === 0)
                 $this->_parseAllow($item);
-            elseif (strpos($item, ' ') === 0)
-                if ($lastAdaptor != '')
-                    $this->_parseDetail($item, $lastAdaptor);
+            elseif ($lastAdaptor != '')
+                $this->_parseDetail($item, $lastAdaptor);
         }
         $this->_interfaceParsed = true;
         return $this->Adaptors;
@@ -156,7 +157,16 @@ class NetworkInterfaces
         $adaptor = &$this->Adaptors[$lastAdaptor];
         switch ($chunks[0]) {
             case 'address':
-                $adaptor->address = $chunks[1];
+                if(strpos($chunks[1], '/') == false)
+                    $adaptor->address = $chunks[1];
+                else
+                {
+                    $chunks[1] =  $this->_parseCidr($chunks[1]);
+                    $adaptor->address = $chunks[1]["address"];
+                    $adaptor->netmask = $chunks[1]["netmask"];
+                    $adaptor->broadcast = $chunks[1]["broadcast"];
+                    $adaptor->network = $chunks[1]["network"];
+                }
                 break;
             case 'netmask':
                 $adaptor->netmask = $chunks[1];
@@ -174,6 +184,16 @@ class NetworkInterfaces
                 $adaptor->Unknown[] = trim($item);
                 break;
         }
+    }
+
+    function _parseCidr($cidr) {
+        $range = array();
+        $cidr = explode('/', $cidr);
+        $range["address"] = $cidr[0];
+        $range["network"] = long2ip((ip2long($cidr[0])) & ((-1 << (32 - (int)$cidr[1]))));
+        $range["broadcast"] = long2ip((ip2long($range["network"])) + pow(2, (32 - (int)$cidr[1])) - 1);
+        $range["netmask"] = long2ip(-1 << (32 - (int)$cidr[1]));
+        return $range;
     }
 
     /**
