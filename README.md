@@ -3,6 +3,9 @@ A simple PHP library for reading and manipulating the /etc/network/interfaces fi
 
 Install:
 
+```
+composer require carp3/network-interfaces
+```
 
 Usage: 
 ```php 
